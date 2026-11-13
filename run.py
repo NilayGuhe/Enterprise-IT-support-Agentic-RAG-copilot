@@ -1,7 +1,8 @@
-from app.core.config import get_settings
+from app.services.ingestion import load_file, chunk_documents
+from app.rag.vectorstore import ensure_index, get_embeddings, add_documents 
+from pathlib import Path
 
-settings = get_settings()
+docs = load_file(Path("data/sample_kb/company_it_handbook.md"))
+chunks = chunk_documents(docs)
 
-print(f"Application Name: {settings.app_name}")
-print(f"Environment: {settings.app_env}")
-print(f"Google API Key: {settings.google_api_key}")
+add_documents(chunks)
