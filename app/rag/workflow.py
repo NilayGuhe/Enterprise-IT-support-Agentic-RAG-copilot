@@ -1,10 +1,12 @@
-
+import re
+import asyncio
 import logging
 from typing import Literal
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_tavily import TavilySearch
 from langgraph.graph import StateGraph, START, END
+from langgraph.config import get_stream_writer
 
 from app.core.config import get_settings
 from app.rag.state import AgentState, RouteDecision, EvidenceGrade
@@ -66,6 +68,52 @@ def web_search_tool():
 
 def add_trace(state: AgentState, message: str):
     return [*state.get("trace", []), message]
+
+
+def extract_stream_text(content) -> str:
+    """Normalize Gemini/LangChain stream chunk content into plain text."""
+    if content is None:
+        return ""
+
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                text = block.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+                elif isinstance(block.get("content"), str):
+                    parts.append(block["content"])
+        return "".join(parts)
+
+    if isinstance(content, dict):
+        text = content.get("text")
+        if isinstance(text, str):
+            return text
+        nested = content.get("content")
+        if isinstance(nested, str):
+            return nested
+
+    return ""
+
+
+async def stream_answer(prompt: str) -> str:
+    """Stream actual Gemini chunks to LangGraph custom stream events."""
+    writer = get_stream_writer()
+    answer_parts = []
+
+    async for chunk in llm().astream(prompt):
+        token = extract_stream_text(getattr(chunk, "content", None))
+        if token:
+            answer_parts.append(token)
+            writer({"type": "token", "content": token})
+
+    return "".join(answer_parts)
 
 
 # --------------------------------------------------
@@ -343,7 +391,7 @@ Original question:
 # 10. ANSWER GENERATION - PRIVATE KB
 # --------------------------------------------------
 
-def generate_from_kb(state: AgentState):
+async def generate_from_kb(state: AgentState):
 
     context = "\n\n".join(
         f"[Source: {doc.metadata.get('source', 'unknown')}]\n"
@@ -351,7 +399,7 @@ def generate_from_kb(state: AgentState):
         for doc in state["kb_docs"]
     )
 
-    answer = llm().invoke(f"""
+    prompt = f"""
 You are an Enterprise IT Support Copilot.
 
 Answer the user's question using ONLY the private company
@@ -371,18 +419,17 @@ User question:
 
 Private company knowledge base:
 {context}
-""").content
+"""
+
+    answer = await stream_answer(prompt)
 
     citations = []
     seen = set()
 
     for doc in state["kb_docs"]:
-
         source = doc.metadata.get("source", "Private KB")
-
         if source not in seen:
             seen.add(source)
-
             citations.append({
                 "title": source.split("/")[-1],
                 "url": "",
@@ -393,20 +440,18 @@ Private company knowledge base:
         "answer": answer,
         "source_used": "private_kb",
         "citations": citations,
-        "trace": add_trace(
-            state,
-            "Answer generation → PRIVATE KB"
-        )
+        "trace": add_trace(state, "Answer generation → PRIVATE KB")
     }
+
 
 
 # --------------------------------------------------
 # 11. ANSWER GENERATION - EXTERNAL WEB
 # --------------------------------------------------
 
-def generate_from_web(state: AgentState):
+async def generate_from_web(state: AgentState):
 
-    answer = llm().invoke(f"""
+    prompt = f"""
 You are an Enterprise IT Support Copilot.
 
 The private company knowledge base did not contain sufficient evidence.
@@ -426,30 +471,79 @@ User question:
 
 External web evidence:
 {state['web_results']}
-""").content
+"""
+
+    answer = await stream_answer(prompt)
 
     return {
         "answer": answer,
         "source_used": "web_search",
-        "trace": add_trace(
-            state,
-            "Answer generation → EXTERNAL WEB"
-        )
+        "trace": add_trace(state, "Answer generation → EXTERNAL WEB")
     }
+
 
 
 # --------------------------------------------------
 # 12. DIRECT ANSWER - NO RETRIEVAL
 # --------------------------------------------------
 
-def direct_answer(state: AgentState):
+async def direct_answer(state: AgentState):
 
-    answer = llm().invoke(f"""
-Respond briefly and naturally to this casual message.
+    question = (state.get("question") or "").strip()
 
-Message:
-{state['question']}
-""").content
+    greeting = re.match(
+        r"^(hi|hello|hey|good morning|good afternoon|good evening)\b",
+        question,
+        flags=re.IGNORECASE
+    )
+
+    if greeting:
+
+        name_match = re.search(
+            r"\b(?:i am|i'm|my name is)\s+([A-Za-z][A-Za-z'-]{1,30})\b",
+            question,
+            flags=re.IGNORECASE
+        )
+
+        if name_match:
+            name = name_match.group(1).capitalize()
+
+            answer = (
+                f"Hi {name}! Nice to meet you. "
+                "How can I help you today?"
+            )
+        else:
+            answer = "Hello! How can I help you today?"
+
+        writer = get_stream_writer()
+        writer({"type": "token", "content": answer})
+
+    elif question.lower() in {
+        "thanks", "thank you", "thank you!", "thanks!"
+    }:
+        answer = "You're welcome! Let me know if you need help with anything else."
+
+        writer = get_stream_writer()
+        writer({"type": "token", "content": answer})
+
+    else:
+        prompt = f"""
+You are IntelliDesk, an enterprise IT support assistant.
+
+Respond briefly and naturally.
+
+Rules:
+- Never use placeholders like [Your Name] or [Company].
+- Never invent a person's name.
+- Only use a name explicitly provided in the user's message.
+- Never introduce yourself using a human placeholder name.
+- Keep your response concise and helpful.
+
+User message:
+{question}
+"""
+
+        answer = await stream_answer(prompt)
 
     return {
         "answer": answer,
@@ -564,9 +658,8 @@ agent_graph = build_graph()
 # 15. MAIN ASK FUNCTION
 # --------------------------------------------------
 
-def ask(question: str):
-
-    initial: AgentState = {
+def initial_state(question: str) -> AgentState:
+    return {
         "question": question,
         "current_query": question,
         "kb_docs": [],
@@ -580,4 +673,28 @@ def ask(question: str):
         "citations": [],
     }
 
-    return agent_graph.invoke(initial)
+
+async def ask_async(question: str):
+    """Run the async-capable graph and collect the final state."""
+    state = initial_state(question)
+
+    async for part in agent_graph.astream(
+        state,
+        stream_mode=["updates", "custom"],
+        version="v2",
+    ):
+        if part["type"] == "updates":
+            for node_update in part["data"].values():
+                state.update(node_update)
+
+    return state
+
+
+def ask(question: str):
+    """Synchronous compatibility wrapper; do not call from an async route."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(ask_async(question))
+
+    raise RuntimeError("Use 'await ask_async(question)' inside async code.")

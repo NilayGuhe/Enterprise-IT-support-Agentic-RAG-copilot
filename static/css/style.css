@@ -1378,3 +1378,282 @@ body {
         transition-duration: .01ms !important;
     }
 }
+
+/* ==========================================================
+   REPAIRED CHAT + OBSERVABILITY LAYOUT
+   Original IntelliDesk theme retained. No dynamic DOM moving.
+========================================================== */
+
+.view-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 13px;
+    color: #bfe9d2;
+    background: rgba(88, 221, 160, .08);
+    border: 1px solid rgba(88, 221, 160, .2);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.view-btn:hover {
+    background: rgba(88, 221, 160, .15);
+    border-color: rgba(88, 221, 160, .4);
+    transform: translateY(-1px);
+}
+
+.view-btn:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+}
+
+/* The chat is the default view and occupies the full application width. */
+.app-shell {
+    display: block !important;
+    width: 100%;
+    min-height: calc(100vh - 52px);
+}
+
+.main-content {
+    display: flex;
+    width: 100%;
+    min-height: calc(100vh - 52px);
+}
+
+.topbar-right {
+    gap: 10px;
+}
+
+/* Observability is a separate screen; it never shares the chat layout. */
+.observability-screen {
+    display: none !important;
+    width: 100%;
+    min-height: calc(100vh - 52px);
+    padding: 30px clamp(18px, 4vw, 42px);
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(44, 99, 87, .08), transparent 50%),
+        var(--bg);
+}
+
+body.observability-active .main-content {
+    display: none !important;
+}
+
+body.observability-active .observability-screen {
+    display: block !important;
+}
+
+.observability-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 1450px;
+    margin: 0 auto;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--border);
+}
+
+.observability-topbar h1 {
+    margin: 8px 0 5px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -.8px;
+}
+
+.observability-topbar p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.observability-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, .9fr) minmax(320px, 1.1fr);
+    align-items: start;
+    gap: 22px;
+    max-width: 1450px;
+    margin: 25px auto 0;
+}
+
+.observability-workflow,
+.observability-trace-panel {
+    min-width: 0;
+}
+
+.obs-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.obs-section-heading h2 {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 15px;
+}
+
+.observability-workflow .workflow-card {
+    padding: 18px;
+}
+
+.observability-workflow .workflow-step {
+    padding: 12px 8px;
+}
+
+.observability-workflow .step-content strong {
+    font-size: 12px;
+}
+
+.observability-workflow .step-content small {
+    font-size: 10px;
+}
+
+.workflow-step.is-active {
+    background: rgba(88, 221, 160, .10);
+    border: 1px solid rgba(88, 221, 160, .28);
+}
+
+.workflow-step.is-active .step-status {
+    background: #f2c66d;
+    box-shadow: 0 0 9px rgba(242, 198, 109, .55);
+}
+
+.workflow-step.is-complete .step-status {
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(88, 221, 160, .4);
+}
+
+.workflow-step.is-skipped {
+    opacity: .45;
+}
+
+.workflow-footnote {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.observability-trace-panel {
+    display: flex;
+    position: static;
+    width: 100%;
+    min-width: 0;
+    padding: 18px;
+    background: rgba(13, 21, 31, .96);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.observability-trace-panel .trace-list {
+    max-height: 430px;
+    overflow-y: auto;
+}
+
+.observability-trace-panel .trace-item {
+    font-size: 11px;
+}
+
+.trace-counter {
+    white-space: nowrap;
+}
+
+/* Streamed assistant response and status text */
+.message.assistant .bubble {
+    white-space: normal;
+}
+
+/* Ensure modal stays above both screens. */
+.modal {
+    z-index: 1000;
+}
+
+@media (max-width: 900px) {
+    .observability-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .topbar {
+        padding: 0 14px;
+    }
+
+    .topbar-right {
+        gap: 7px;
+    }
+
+    .system-status,
+    .topbar-divider,
+    .model-badge {
+        display: none;
+    }
+
+    .view-btn {
+        min-height: 33px;
+        padding: 0 9px;
+        font-size: 9px;
+    }
+
+    .observability-screen {
+        padding: 20px 13px;
+    }
+
+    .observability-topbar {
+        align-items: flex-start;
+    }
+
+    .observability-topbar h1 {
+        font-size: 21px;
+    }
+
+    .observability-topbar p {
+        max-width: 230px;
+    }
+
+    .suggestion-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Main hero heading */
+.eyebrow {
+    font-size: clamp(22px, 2.5vw, 32px) !important;
+    font-weight: 800;
+    letter-spacing: 0.10em;
+    line-height: 1.35;
+    color: #78e6ae;
+    margin-bottom: 20px;
+}
+
+/* Secondary heading */
+.welcome-section h1 {
+    font-size: clamp(25px, 2.8vw, 36px) !important;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    margin-top: 10px;
+}
+
+/* Mobile adjustment */
+@media (max-width: 600px) {
+    .eyebrow {
+        font-size: 18px !important;
+        letter-spacing: 0.06em;
+    }
+
+    .welcome-section h1 {
+        font-size: 27px !important;
+    }
+}

@@ -11,149 +11,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=repair1">
 </head>
 
 <body>
 
 <div class="app-shell">
-
-    <!-- LEFT SIDEBAR -->
-    <aside class="sidebar">
-
-        <div class="brand">
-            <div class="brand-icon">
-                <span>✦</span>
-            </div>
-
-            <div>
-                <h2>IntelliDesk</h2>
-                <span>Enterprise AI Platform</span>
-            </div>
-        </div>
-
-        <div class="workspace-label">WORKSPACE</div>
-
-        <nav class="navigation">
-            <a href="#" class="nav-item active">
-                <span class="nav-icon">⌂</span>
-                AI Assistant
-            </a>
-
-            <a href="#workflow" class="nav-item">
-                <span class="nav-icon">⌘</span>
-                Agent Workflow
-            </a>
-
-            <a href="#" class="nav-item" id="openUpload">
-                <span class="nav-icon">＋</span>
-                Knowledge Base
-            </a>
-        </nav>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- WORKFLOW CARD -->
-        <div class="workflow-section" id="workflow">
-
-            <div class="section-heading">
-                <span>AGENT ARCHITECTURE</span>
-                <span class="live-indicator">LIVE</span>
-            </div>
-
-            <div class="workflow-card">
-
-                <div class="workflow-step">
-                    <div class="step-icon purple">⌘</div>
-                    <div class="step-content">
-                        <strong>Question Router</strong>
-                        <small>Gemini intent classification</small>
-                    </div>
-                    <span class="step-status"></span>
-                </div>
-
-                <div class="step-connector"></div>
-
-                <div class="workflow-step">
-                    <div class="step-icon blue">⌕</div>
-                    <div class="step-content">
-                        <strong>Private KB Retrieval</strong>
-                        <small>Pinecone vector search</small>
-                    </div>
-                    <span class="step-status"></span>
-                </div>
-
-                <div class="step-connector"></div>
-
-                <div class="workflow-step">
-                    <div class="step-icon orange">◈</div>
-                    <div class="step-content">
-                        <strong>Evidence Grading</strong>
-                        <small>Gemini relevance evaluation</small>
-                    </div>
-                    <span class="step-status"></span>
-                </div>
-
-                <div class="step-connector"></div>
-
-                <div class="workflow-step">
-                    <div class="step-icon green">↗</div>
-                    <div class="step-content">
-                        <strong>Web Search Fallback</strong>
-                        <small>Tavily external search</small>
-                    </div>
-                    <span class="step-status"></span>
-                </div>
-
-                <div class="step-connector"></div>
-
-                <div class="workflow-step">
-                    <div class="step-icon violet">⟳</div>
-                    <div class="step-content">
-                        <strong>Query Rewriting</strong>
-                        <small>Bounded retrieval retry</small>
-                    </div>
-                    <span class="step-status"></span>
-                </div>
-
-                <div class="step-connector"></div>
-
-                <div class="workflow-step">
-                    <div class="step-icon teal">✧</div>
-                    <div class="step-content">
-                        <strong>Answer Generation</strong>
-                        <small>Grounded AI response</small>
-                    </div>
-                    <span class="step-status"></span>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- SIDEBAR BOTTOM -->
-        <div class="sidebar-bottom">
-
-            <div class="security-card">
-                <div class="security-icon">♧</div>
-                <div>
-                    <strong>Private KB First</strong>
-                    <p>Company knowledge is prioritized over external sources.</p>
-                </div>
-            </div>
-
-            <div class="profile">
-                <div class="profile-avatar">IT</div>
-                <div class="profile-details">
-                    <strong>IT Support Workspace</strong>
-                    <span>Administrator Console</span>
-                </div>
-                <span class="profile-menu">•••</span>
-            </div>
-
-        </div>
-
-    </aside>
-
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -168,6 +31,14 @@
             </div>
 
             <div class="topbar-right">
+
+                <button type="button" class="view-btn" id="openObservability">
+                    <span>◈</span> Observability
+                </button>
+
+                <button type="button" class="view-btn" id="openUpload">
+                    <span>＋</span> Knowledge Base
+                </button>
 
                 <div class="system-status">
                     <span class="status-dot"></span>
@@ -348,105 +219,134 @@
     </main>
 
 
-    <!-- RIGHT TRACE PANEL -->
-    <aside class="trace-panel">
+    <!-- OBSERVABILITY SCREEN: separate from the employee chat -->
+    <section id="observabilityScreen" class="observability-screen" aria-hidden="true">
 
-        <div class="trace-header">
-
+        <header class="observability-topbar">
             <div>
-                <div class="panel-eyebrow">OBSERVABILITY</div>
-                <h2>Agent Trace</h2>
-                <p>Monitor the agent's execution path.</p>
+                <div class="panel-eyebrow">SYSTEM MONITORING</div>
+                <h1>Agent Observability</h1>
+                <p>Inspect the actual workflow execution path, evidence decisions and final response source.</p>
             </div>
 
-            <div class="trace-live">
-                <span class="status-dot"></span>
-                LIVE
-            </div>
+            <button type="button" class="view-btn back-btn" id="backToChat">
+                ← Back to Chat
+            </button>
+        </header>
 
-        </div>
+        <div class="observability-grid">
 
-
-        <!-- EXECUTION TRACE -->
-        <div class="trace-card">
-
-            <div class="trace-card-heading">
-                <strong>Execution Timeline</strong>
-                <span class="trace-counter">0 STEPS</span>
-            </div>
-
-            <div id="trace" class="trace-list">
-                <div class="empty">
-                    <div class="empty-icon">⌘</div>
-                    <strong>Waiting for request</strong>
-                    <p>Your LangGraph execution trace will appear here.</p>
+            <section class="observability-workflow">
+                <div class="obs-section-heading">
+                    <h2>Workflow Architecture</h2>
+                    <span class="trace-live"><span class="status-dot"></span> LIVE</span>
                 </div>
-            </div>
 
-        </div>
+                <div class="workflow-card">
+                    <div class="workflow-step" data-node="route_question">
+                        <div class="step-icon purple">⌘</div>
+                        <div class="step-content"><strong>Question Router</strong><small>Gemini intent classification</small></div>
+                        <span class="step-status"></span>
+                    </div>
+                    <div class="step-connector"></div>
 
+                    <div class="workflow-step" data-node="retrieve_kb">
+                        <div class="step-icon blue">⌕</div>
+                        <div class="step-content"><strong>Private KB Retrieval</strong><small>Pinecone vector search</small></div>
+                        <span class="step-status"></span>
+                    </div>
+                    <div class="step-connector"></div>
 
-        <!-- FINAL SOURCE -->
-        <div class="source-card">
+                    <div class="workflow-step" data-node="grade_kb">
+                        <div class="step-icon orange">◈</div>
+                        <div class="step-content"><strong>KB Evidence Grading</strong><small>Gemini relevance evaluation</small></div>
+                        <span class="step-status"></span>
+                    </div>
+                    <div class="step-connector"></div>
 
-            <div class="source-heading">
-                <span>FINAL RESPONSE SOURCE</span>
-                <span class="source-indicator"></span>
-            </div>
+                    <div class="workflow-step" data-node="search_web">
+                        <div class="step-icon green">↗</div>
+                        <div class="step-content"><strong>Web Search Fallback</strong><small>Tavily external search</small></div>
+                        <span class="step-status"></span>
+                    </div>
+                    <div class="step-connector"></div>
 
-            <div class="source-result">
-                <div class="source-icon">◈</div>
-                <div>
-                    <strong id="sourceUsed">Awaiting response</strong>
-                    <small>Source classification</small>
+                    <div class="workflow-step" data-node="grade_web">
+                        <div class="step-icon orange">◈</div>
+                        <div class="step-content"><strong>Web Evidence Grading</strong><small>Gemini relevance evaluation</small></div>
+                        <span class="step-status"></span>
+                    </div>
+                    <div class="step-connector"></div>
+
+                    <div class="workflow-step" data-node="rewrite_query">
+                        <div class="step-icon violet">⟳</div>
+                        <div class="step-content"><strong>Query Rewriting</strong><small>Bounded retrieval retry</small></div>
+                        <span class="step-status"></span>
+                    </div>
+                    <div class="step-connector"></div>
+
+                    <div class="workflow-step" data-node="generate_from_kb,generate_from_web,direct_answer">
+                        <div class="step-icon teal">✧</div>
+                        <div class="step-content"><strong>Answer Generation</strong><small>Grounded AI response</small></div>
+                        <span class="step-status"></span>
+                    </div>
+
+                    <div class="workflow-footnote">Only nodes executed for the current request should be highlighted.</div>
                 </div>
-            </div>
+            </section>
 
-            <div class="source-description">
-                Answers are classified according to the evidence source
-                used by the agent.
-            </div>
+            <aside class="trace-panel observability-trace-panel">
+                <div class="trace-header">
+                    <div>
+                        <div class="panel-eyebrow">OBSERVABILITY</div>
+                        <h2>Agent Trace</h2>
+                        <p>Monitor the agent's execution path.</p>
+                    </div>
+                    <div class="trace-live"><span class="status-dot"></span> LIVE</div>
+                </div>
+
+                <div class="trace-card">
+                    <div class="trace-card-heading">
+                        <strong>Execution Timeline</strong>
+                        <span class="trace-counter">0 STEPS</span>
+                    </div>
+                    <div id="trace" class="trace-list" aria-live="polite">
+                        <div class="empty">
+                            <div class="empty-icon">⌘</div>
+                            <strong>Waiting for request</strong>
+                            <p>Your LangGraph execution trace will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="source-card">
+                    <div class="source-heading">
+                        <span>FINAL RESPONSE SOURCE</span>
+                        <span class="source-indicator"></span>
+                    </div>
+                    <div class="source-result">
+                        <div class="source-icon">◈</div>
+                        <div>
+                            <strong id="sourceUsed">Awaiting response</strong>
+                            <small>Source classification</small>
+                        </div>
+                    </div>
+                    <div class="source-description">Answers are classified according to the evidence source used by the agent.</div>
+                </div>
+
+                <div class="stack-section">
+                    <div class="panel-eyebrow">TECHNOLOGY STACK</div>
+                    <div class="stack-item"><span class="stack-logo gemini-logo">G</span><span>Google Gemini</span><small>LLM</small></div>
+                    <div class="stack-item"><span class="stack-logo pinecone-logo">P</span><span>Pinecone</span><small>Vector DB</small></div>
+                    <div class="stack-item"><span class="stack-logo langgraph-logo">L</span><span>LangGraph</span><small>Workflow</small></div>
+                    <div class="stack-item"><span class="stack-logo tavily-logo">T</span><span>Tavily</span><small>Web Search</small></div>
+                </div>
+
+                <div class="trace-footer"><span class="footer-dot"></span> Secure enterprise workspace</div>
+            </aside>
 
         </div>
-
-
-        <!-- TECHNOLOGY STACK -->
-        <div class="stack-section">
-
-            <div class="panel-eyebrow">TECHNOLOGY STACK</div>
-
-            <div class="stack-item">
-                <span class="stack-logo gemini-logo">G</span>
-                <span>Google Gemini</span>
-                <small>LLM</small>
-            </div>
-
-            <div class="stack-item">
-                <span class="stack-logo pinecone-logo">P</span>
-                <span>Pinecone</span>
-                <small>Vector DB</small>
-            </div>
-
-            <div class="stack-item">
-                <span class="stack-logo langgraph-logo">L</span>
-                <span>LangGraph</span>
-                <small>Workflow</small>
-            </div>
-
-            <div class="stack-item">
-                <span class="stack-logo tavily-logo">T</span>
-                <span>Tavily</span>
-                <small>Web Search</small>
-            </div>
-
-        </div>
-
-        <div class="trace-footer">
-            <span class="footer-dot"></span>
-            Secure enterprise workspace
-        </div>
-
-    </aside>
+    </section>
 
 </div>
 <footer class="site-footer">
@@ -524,7 +424,7 @@
 </div>
 
 
-<script src="/static/js/app.js"></script>
+<script src="/static/js/app.js?v=repair1"></script>
 
 </body>
 </html>
